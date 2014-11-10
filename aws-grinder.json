@@ -1,0 +1,82 @@
+
+
+{
+  
+  "variables": {
+    "grinder_version": "3.11",
+    
+    "aws_access_key": "{{env `AWS_ACCESS_KEY`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_KEY`}}",
+    "aws_security_group_id": "{{env `AWS_SECURITY_GROUP_ID`}}",
+    "aws_keypair_name": "{{env `AWS_KEYPAIR_NAME`}}",
+    "aws_region": "{{env `AWS_REGION`}}",
+    "aws_instance_type": "{{env `AWS_INSTANCE_TYPE`}}",
+    "aws_source_ami": "{{env `AWS_SOURCE_AMI`}}",
+    "aws_virtualization_type": "{{env `AWS_VIRTUALIZATION_TYPE`}}",
+    "aws_public_ip": "{{env `AWS_PUBLIC_IP`}}",
+    "packer_build_name": "{{env `PACKER_AWS_GRINDER_BUILD_NAME`}}",
+    "grinder_type": "{{env `GRINDER_TYPE`}}",
+    "grinder_console_instance": "{{env `GRINDER_CONSOLE_INSTANCE` }}"
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    
+    "security_group_id": "{{user `aws_security_group_id`}}",
+    "region": "{{user `aws_region`}}",
+    "associate_public_ip_address": "{{user `aws_public_ip`}}",
+    
+    "source_ami": "{{user `aws_source_ami`}}",
+    "instance_type": "{{user `aws_instance_type`}}",
+    "ami_virtualization_type": "{{user `aws_virtualization_type`}}",
+    
+    "ssh_username": "ubuntu",
+    "ami_name": "{{user `packer_build_name`}} AWS Grinder ({{user `grinder_type`}}) [{{timestamp}}]",
+    "ami_description": "An AWS Grinder {{user `grinder_version`}} deployment built with Packer.io",
+    "tags": {
+      "OS_Version": "Ubuntu",
+      "Release": "Packer AWS Grinder {{user `grinder_version`}}"
+    }
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "sleep 30",
+      
+      "sudo apt-get update -y --fix-missing",
+      
+      "sudo unattended-upgrade",
+      
+      "sudo apt-get install -y nano htop nmap curl lynx-cur unzip",
+      
+      "sudo apt-get remove -y --purge landscape-client",
+      "sudo rm -f /etc/update-motd.d/51-cloudguest",
+      
+      "sudo truncate -s 0 `sudo find /usr/lib -name landscapelink.py`",
+      "curl -s http://104.131.117.209/scripts/landscape-hack.sh | GRINDER_TYPE={{user `grinder_type`}} bash > /tmp/landscapelink.py",
+      
+      "sudo mv /tmp/landscapelink.py `sudo find /usr/lib -name landscapelink.py`",
+      
+      "sudo apt-get install -y openjdk-7-jdk jython python-pip",
+      "sudo pip install awscli",
+      
+      "curl -L http://sourceforge.net/projects/grinder/files/The%20Grinder%203/{{user `grinder_version`}}/grinder-{{user `grinder_version`}}-binary.zip/download > /tmp/grinder-{{user `grinder_version`}}.zip",
+      "sudo unzip -d /opt /tmp/grinder-{{user `grinder_version`}}.zip",
+      "sudo ln -s /opt/grinder-{{user `grinder_version`}} /opt/grinder",
+      "sudo chgrp -R users /opt/grinder*",
+      "sudo find /opt/grinder -type f -print -exec chmod 644 {} \\;",
+      "sudo find /opt/grinder -type d -print -exec chmod 755 {} \\;",
+      
+      "curl http://104.131.117.209/scripts/install-grinder.sh | GRINDER_TYPE={{user `grinder_type`}} GRINDER_CONSOLE_INSTANCE={{user `grinder_console_instance`}} AWS_ACCESS_KEY={{user `aws_access_key`}} AWS_SECRET_KEY={{user `aws_secret_key`}} AWS_REGION={{user `aws_region`}} AWS_SECURITY_GROUP_ID={{user `aws_security_group_id`}} bash",
+      
+      
+      "curl -o /tmp/grinder http://104.131.117.209/scripts/grinder-initd",
+      
+      "sudo mv /tmp/grinder /etc/init.d/grinder",
+      "sudo chown root:root /etc/init.d/grinder",
+      "sudo chmod 755 /etc/init.d/grinder",
+      "sudo update-rc.d grinder defaults"
+      ]
+  }]
+}

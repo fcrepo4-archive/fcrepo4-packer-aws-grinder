@@ -1,0 +1,5 @@
+{
+"aws_instance_type": "t2.medium",
+"aws_virtualization_type": "hvm",
+"aws_source_ami": "ami-0070c468"
+}
