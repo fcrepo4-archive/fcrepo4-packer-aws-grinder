@@ -39,11 +39,11 @@ General variables are those that are consistent across the Grinder console and a
   <dt>aws_secret_key</dt>
   <dd>The AWS_SECRET_KEY that corresponds to the supplied AWS_ACCESS_KEY.</dd>
   <dt>aws_security_group_id</dt>
-  <dd>A pre-configured AWS Security Group ID (not Name) that will allow SSH and HTTP access to the EC2 build.</dd>
+  <dd>A pre-configured AWS Security Group ID (not Name) that will allow SSH access to the EC2 instance. It should also allow access to ports 6372 and 6373. Access can be restricted to the machine from which you will submit the tests.  Access for the Grinder agents is dynamically granted (and revoked) as they are spun up (and shutdown).</dd>
   <dt>aws_region</dt>
   <dd>The AWS region to use. For instance: <span style="font-weight: bold">us-east-1</span> or <span style="font-weight: bold">us-west-2</span>.</dd>
   <dt>packer_build_name</dt>
-  <dd>A name that will distinguish your build products from someone else's. It can be a simple string like `fedora` or `ucla`.</dd>
+  <dd>A name that will distinguish your build products from someone else's. It can be a simple string like `Fedora` or `UCLA`.</dd>
 </dl>
 
 ### AWS Grinder Variables for Console and Agent Var Files
@@ -61,7 +61,7 @@ The `agent-vars.json` and `console-vars.json` files have the same set of variabl
 
 ## Running
 
-To run the packer-aws-grinder build, from within the project directory, type:
+To run the packer-aws-grinder build (creating the Grinder AMIs and Console instance), type the following (from within the project directory):
 
     ./build.sh
 

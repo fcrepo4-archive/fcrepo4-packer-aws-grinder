@@ -1,12 +1,11 @@
 /*
-
-  This is my source version of the packer-aws-grinder build.  It contains comments which are stripped out of the file
-  before it's fed to the Packer.io build process.  There should also be an aws-grinder.json file in this directory.  That
-  file should be the same as this one, sans comments.  Any changes to the build configuration should be made to this
-  file and not the aws-grinder.json one.
+  This is my source version of the packer-aws-grinder build. It contains comments which are stripped out of the file
+  before it's fed to the Packer.io build process. There should also be an aws-grinder.json file in this directory.
+  That file should be the same as this one, sans comments.  Any changes to the build configuration should be made to
+  this file and not the aws-grinder.json one.
 
   Author: Kevin S. Clarke <ksclarke@gmail.com>
-
+  URL: http://github.com/ksclarke/packer-aws-grinder
 */
 
 {
