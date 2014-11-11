@@ -138,4 +138,4 @@ if grep -q 'Builds finished but no artifacts were created' aws-grinder-agent-bui
 echo `awk '{ print $NF }' aws-grinder-agent-build.log | tail -n 1 | tr -d '\n'` | tee ec2-agent.ami
 
 # Lastly, we stop our console instance but do not terminate it; it will be reused when we run the grinder cloud
-aws ec2 stop-instances --instance-ids `cat ec2-console.instance`
+RESULT=`aws ec2 stop-instances --instance-ids $(cat ec2-console.instance)`

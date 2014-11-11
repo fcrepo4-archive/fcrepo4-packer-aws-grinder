@@ -43,7 +43,7 @@ fi
 
 # A function that waits until the supplied instance is up and running
 function wait_for_instance {
-  # To wait until console instance is in a "running" state, we first need to know what type of virtualization we're using
+  # To wait until instance is in a "running" state, we first need to know what type of virtualization we're using
   if [ `aws ec2 describe-instances --instance-id ${1} --filters Name=virtualization-type,Values=hvm | grep -c INSTANCES` == 1 ]; then
     IP_INDEX=15
   elif [ `aws ec2 describe-instances --instance-id ${1} --filters Name=virtualization-type,Values=paravirtual | grep -c INSTANCES` == 1 ]; then
@@ -55,9 +55,10 @@ function wait_for_instance {
 
   # Now, we keep checking for a public IP (which means the console is up and running, and accessible by our agents)
   for i in {1..300}; do
-    echo `aws ec2 describe-instances --instance-id ${1} --filters Name=instance-state-name,Values=running | grep INSTANCES | cut -f $IP_INDEX` | tee /tmp/ec2-console.ip >/dev/null
-    if [[ `cat /tmp/ec2-console.ip` =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-      # Once we have a public IP, we know it's up and running and can continue
+    echo `aws ec2 describe-instances --instance-id ${1} --filters Name=instance-state-name,Values=running | grep INSTANCES | cut -f $IP_INDEX` | tee /tmp/ec2-instance.ip >/dev/null
+
+    # Once we have an IP, we know it's up and running and can continue
+    if [[ `cat /tmp/ec2-instance.ip` =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
       break
     fi
   done

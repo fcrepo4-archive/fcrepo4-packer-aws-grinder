@@ -74,6 +74,12 @@
       "sudo chgrp -R users /opt/grinder*",
       "sudo find /opt/grinder -type f -print -exec chmod 644 {} \\;",
       "sudo find /opt/grinder -type d -print -exec chmod 755 {} \\;",
+      /* Change some system defaults to be more Grinder friendly; like, extend ephemera port range */
+      "echo '32768 65535' | sudo tee /proc/sys/net/ipv4/ip_local_port_range >/dev/null",
+      /* And enable port recycling */
+      "echo '1' | sudo tee /proc/sys/net/ipv4/tcp_tw_recycle >/dev/null",
+      /* And reduce the port timeout */
+      "echo '10' | sudo tee /proc/sys/net/ipv4/tcp_fin_timeout >/dev/null",
       /* Install the Grinder console or agent (depending on which AMI this is) then make sure it works */
       "curl https://raw.githubusercontent.com/ksclarke/packer-aws-grinder/master/scripts/install-grinder.sh | GRINDER_TYPE={{user `grinder_type`}} GRINDER_CONSOLE_INSTANCE={{user `grinder_console_instance`}} AWS_ACCESS_KEY={{user `aws_access_key`}} AWS_SECRET_KEY={{user `aws_secret_key`}} AWS_REGION={{user `aws_region`}} AWS_SECURITY_GROUP_ID={{user `aws_security_group_id`}} bash",
       /* Install the Grinder init.d script and set it to start on reboots */

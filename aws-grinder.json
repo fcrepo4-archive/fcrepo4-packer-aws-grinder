@@ -67,6 +67,12 @@
       "sudo find /opt/grinder -type f -print -exec chmod 644 {} \\;",
       "sudo find /opt/grinder -type d -print -exec chmod 755 {} \\;",
       
+      "echo '32768 65535' | sudo tee /proc/sys/net/ipv4/ip_local_port_range >/dev/null",
+      
+      "echo '1' | sudo tee /proc/sys/net/ipv4/tcp_tw_recycle >/dev/null",
+      
+      "echo '10' | sudo tee /proc/sys/net/ipv4/tcp_fin_timeout >/dev/null",
+      
       "curl https://raw.githubusercontent.com/ksclarke/packer-aws-grinder/master/scripts/install-grinder.sh | GRINDER_TYPE={{user `grinder_type`}} GRINDER_CONSOLE_INSTANCE={{user `grinder_console_instance`}} AWS_ACCESS_KEY={{user `aws_access_key`}} AWS_SECRET_KEY={{user `aws_secret_key`}} AWS_REGION={{user `aws_region`}} AWS_SECURITY_GROUP_ID={{user `aws_security_group_id`}} bash",
       
       "curl -o /tmp/grinder https://raw.githubusercontent.com/ksclarke/packer-aws-grinder/master/scripts/grinder-initd",

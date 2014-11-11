@@ -27,6 +27,8 @@ if [ "$GRINDER_TYPE" == "console" ]; then
   echo "Starting Grinder Console running on ${CONSOLE_HOST}"
   # Start up the Grinder console and configure it to listen on the public port
   nohup java -Djava.net.preferIPv4Stack=true -Dgrinder.console.httpHost=${CONSOLE_HOST} -classpath "/opt/grinder/lib/*" net.grinder.Console -headless &
+  # Perform a little cleanup before finishing creation of the AMI
+  rm nohup.out
 elif [ "$GRINDER_TYPE" == "agent" ]; then
   sudo mkdir /etc/grinder
   # Leave hint of Grinder type so init.d script knows what type of service to start
@@ -88,6 +90,9 @@ elif [ "$GRINDER_TYPE" == "agent" ]; then
   # Test that the connection was made
   if grep -Fq "waiting for console signal" nohup.out; then
     echo "Successfully connected agent to console"
+
+    # Perform a little cleanup before finishing creation of the AMI
+    rm nohup.out
   else
     echo "Failed to connect agent to console"
     exit 1
