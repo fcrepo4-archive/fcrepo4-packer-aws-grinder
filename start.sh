@@ -72,6 +72,16 @@ function extract_from_json {
 # Start up our Grinder Console instance
 RESULT=`aws ec2 start-instances --instance-ids $(cat ec2-console.instance)`
 wait_for_instance $(cat ec2-console.instance)
+
+# Once the instance is up, we want to confirm that Grinder is up before proceeding
+CONSOLE_IP=`echo $(cat /tmp/ec2-instance.ip)`
+for i in {1..300}; do
+  CONSOLE_DOMAIN=`curl -s http://${CONSOLE_IP}:6373/properties | grep -Po '"httpHost"\:"[a-z0-9\-\.]*"' | grep -o ec2-.*.compute-1.amazonaws.com`
+  if [ "$CONSOLE_DOMAIN" == "ec2-${CONSOLE_IP//./-}.compute-1.amazonaws.com" ]; then
+    break
+  fi
+done
+
 echo "Started Grinder Console ... $(cat ec2-console.instance)"
 
 # We need to read our JSON config files to get the values needed to start the Grinder Agents

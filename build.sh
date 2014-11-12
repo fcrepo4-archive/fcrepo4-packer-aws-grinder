@@ -108,7 +108,7 @@ build_aws_grinder "console" "true"
 
 # We need to find out the Grinder Console's AMI so we can launch and pass the instance to the Agents
 if grep -q 'Builds finished but no artifacts were created' aws-grinder-console-build.log; then exit 1; fi
-echo `awk '{ print $NF }' aws-grinder-console-build.log | tail -n 1 | tr -d '\n'` | tee ec2-console.ami
+echo `awk '{ print $NF }' aws-grinder-console-build.log | tail -n 1 | tr -d '\n'` | tee ec2-console.ami >/dev/null
 
 # We need to read our JSON config files to get the values for the arguments to: aws ec2 run-instances
 if [ -z "$AWS_REGION" ]; then
@@ -128,14 +128,14 @@ fi
 echo `aws ec2 run-instances \
   --image-id $(cat ec2-console.ami) --security-group-ids "${AWS_SECURITY_GROUP_ID}" \
   --key-name "${AWS_KEYPAIR_NAME}" --instance-type "${AWS_INSTANCE_TYPE}" \
-  --placement "AvailabilityZone=${AWS_REGION}a" | grep INSTANCES | cut -f 8` | tee ec2-console.instance
+  --placement "AvailabilityZone=${AWS_REGION}a" | grep INSTANCES | cut -f 8` | tee ec2-console.instance >/dev/null
 
 # Run the Packer.io build for our Grinder Agent AMI; "false" gives it a private (rather than public) IP
 build_aws_grinder "agent" "false" `cat ec2-console.instance`
 
 # We need to find out the Grinder Agent's AMI so we can launch instances later from our start.sh script
 if grep -q 'Builds finished but no artifacts were created' aws-grinder-agent-build.log; then exit 1; fi
-echo `awk '{ print $NF }' aws-grinder-agent-build.log | tail -n 1 | tr -d '\n'` | tee ec2-agent.ami
+echo `awk '{ print $NF }' aws-grinder-agent-build.log | tail -n 1 | tr -d '\n'` | tee ec2-agent.ami >/dev/null
 
 # Lastly, we stop our console instance but do not terminate it; it will be reused when we run the grinder cloud
 RESULT=`aws ec2 stop-instances --instance-ids $(cat ec2-console.instance)`
