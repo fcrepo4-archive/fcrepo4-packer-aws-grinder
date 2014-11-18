@@ -1,4 +1,5 @@
 #!/bin/bash
+
 #------------------------------------------------------------------------------
 # grinder-initd v0.0.1
 #------------------------------------------------------------------------------
@@ -20,7 +21,6 @@
 # Short-Description: init script for Packer AWS Grinder
 # Description: init script for Packer AWS Grinder; should be copied to /etc/init.d
 ### END INIT INFO
-
 
 GRINDER_HOME="/opt/grinder"
 GRINDER_DATA_DIR="/tmp"
@@ -58,7 +58,7 @@ if grep -Fxq "agent" /etc/grinder/type; then
   GRINDER_AGENT_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4`
 elif grep -Fxq "console" /etc/grinder/type; then
   # Cf. http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html
-  GRINDER_CONSOLE_HOST=`curl -s http://169.254.169.254/latest/meta-data/public-hostname`
+  GRINDER_CONSOLE_HOST=`curl -s http://169.254.169.254/latest/meta-data/local-hostname`
 
   # Make sure we're responding to our assigned EC2 public address before continuing
   for i in {1..300}; do
