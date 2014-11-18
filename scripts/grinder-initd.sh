@@ -51,7 +51,7 @@ if grep -Fxq "agent" /etc/grinder/type; then
     echo "System not configured with an EC2 console instance"
     exit 1
   fi
-  GRINDER_CONSOLE_HOST=`sudo -u ${GRINDER_USER} aws ec2 describe-instances --filters Name=instance-id,Values=$(cat /etc/grinder/console.instance) | grep INSTANCES | cut -f 14`
+  GRINDER_CONSOLE_HOST=`sudo -u ${GRINDER_USER} aws ec2 describe-instances --filters Name=instance-id,Values=$(cat /etc/grinder/console.instance) | grep INSTANCES | cut -f 12`
   GRINDER_EXE="Grinder"
   GRINDER_HOST_CONFIG="grinder.consoleHost"
   # Cf. http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html

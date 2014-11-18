@@ -75,7 +75,7 @@
       
       "curl https://raw.githubusercontent.com/ksclarke/packer-aws-grinder/master/scripts/install-grinder.sh | GRINDER_TYPE={{user `grinder_type`}} GRINDER_CONSOLE_INSTANCE={{user `grinder_console_instance`}} AWS_ACCESS_KEY={{user `aws_access_key`}} AWS_SECRET_KEY={{user `aws_secret_key`}} AWS_REGION={{user `aws_region`}} AWS_SECURITY_GROUP_ID={{user `aws_security_group_id`}} bash",
       
-      "curl -o /tmp/grinder https://raw.githubusercontent.com/ksclarke/packer-aws-grinder/master/scripts/grinder-initd",
+      "curl -o /tmp/grinder https://raw.githubusercontent.com/ksclarke/packer-aws-grinder/master/scripts/grinder-initd.sh",
       "sudo mv /tmp/grinder /etc/init.d/grinder",
       "sudo chown root:root /etc/init.d/grinder",
       "sudo chmod 755 /etc/init.d/grinder",
