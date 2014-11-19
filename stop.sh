@@ -4,7 +4,7 @@
 echo ""
 echo "Shutting down Grinder Agents..."
 echo ""
-for FILE in `ls ec2-agent-*.instance`; do
+for FILE in `ls ec2-agent-*.instance 2>/dev/null`; do
   INSTANCE=`cat $FILE`
   RESULT=`aws ec2 stop-instances --instance-ids $INSTANCE 2>&1`
   RESULT=`aws ec2 terminate-instances --instance-ids $INSTANCE 2>&1`
@@ -12,7 +12,7 @@ for FILE in `ls ec2-agent-*.instance`; do
 done
 
 # Clean up the agent instance references
-rm ec2-agent-*.instance
+rm -f ec2-agent-*.instance
 
 # Shutdown the console instance
 echo ""
