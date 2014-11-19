@@ -89,6 +89,7 @@ start)
       # Add this agent's security group permissions
       sudo -u ${GRINDER_USER} aws ec2 authorize-security-group-ingress --group-id `cat /etc/grinder/ec2.sgid` --protocol tcp --port 6372 --cidr ${GRINDER_AGENT_IP}/32
     fi
+
     nohup $GRINDER_WRAPPER_CMD "$GRINDER_START_CMD" > $GRINDER_LOGFILE 2>&1 &
     pid=$!
     echo $pid > $GRINDER_PIDFILE
@@ -111,6 +112,7 @@ start)
       if [[ $? != 0 ]]; then
         echo "Failed to start Grinder"
         echo "  Consult the log for more details: $GRINDER_LOGFILE"
+        rm -f $GRINDER_PIDFILE
       fi
     fi
   fi
