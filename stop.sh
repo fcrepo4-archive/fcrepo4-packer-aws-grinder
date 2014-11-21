@@ -7,12 +7,15 @@ echo ""
 for FILE in `ls ec2-agent-*.instance 2>/dev/null`; do
   INSTANCE=`cat $FILE`
   RESULT=`aws ec2 stop-instances --instance-ids $INSTANCE 2>&1`
-  RESULT=`aws ec2 terminate-instances --instance-ids $INSTANCE 2>&1`
-  echo "  $INSTANCE stopped and terminated"
-done
 
-# Clean up the agent instance references
-rm -f ec2-agent-*.instance
+  if [ "$1" == "terminate" ]; then
+    RESULT=`aws ec2 terminate-instances --instance-ids $INSTANCE 2>&1`
+    rm -f "$FILE"
+    echo "  $INSTANCE stopped and terminated"
+  else
+    echo "  $INSTANCE stopped"
+  fi
+done
 
 # Shutdown the console instance
 echo ""

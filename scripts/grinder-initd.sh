@@ -51,7 +51,8 @@ if grep -Fxq "agent" /etc/grinder/type; then
     echo "System not configured with an EC2 console instance"
     exit 1
   fi
-  GRINDER_CONSOLE_HOST=`sudo -u ${GRINDER_USER} aws ec2 describe-instances --filters Name=instance-id,Values=$(cat /etc/grinder/console.instance) | grep INSTANCES | cut -f 12`
+  GRINDER_CONSOLE_HOST=`sudo -u ${GRINDER_USER} aws ec2 describe-instances \
+      --filters Name=instance-id,Values=$(cat /etc/grinder/console.instance) | grep INSTANCES | cut -f 12`
   GRINDER_EXE="Grinder"
   GRINDER_HOST_CONFIG="grinder.consoleHost"
   # Cf. http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html
@@ -75,7 +76,10 @@ else
   exit 1
 fi
 
-GRINDER_START_CMD="java -Djava.net.preferIPv4Stack=true -D${GRINDER_HOST_CONFIG}=${GRINDER_CONSOLE_HOST} -classpath '/opt/grinder/lib/*' net.grinder.${GRINDER_EXE} ${GRINDER_OPTS}"
+GRINDER_START_CMD="java -Djava.net.preferIPv4Stack=true \
+    -D${GRINDER_HOST_CONFIG}=${GRINDER_CONSOLE_HOST} \
+    -classpath '/opt/grinder/lib/*' \
+    net.grinder.${GRINDER_EXE} ${GRINDER_OPTS}"
 GRINDER_WRAPPER_CMD="sudo -u ${GRINDER_USER} -s /bin/bash -c "
 
 case $1 in
@@ -85,9 +89,25 @@ start)
   else
     started=false
     cd $GRINDER_DATA_DIR
+
     if grep -Fxq "agent" /etc/grinder/type; then
-      # Add this agent's security group permissions
-      sudo -u ${GRINDER_USER} aws ec2 authorize-security-group-ingress --group-id `cat /etc/grinder/ec2.sgid` --protocol tcp --port 6372 --cidr ${GRINDER_AGENT_IP}/32
+      SGID=`cat /etc/grinder/ec2.sgid`
+
+      # Give this agent permission to connect to the connect to the Grinder Console
+      RESULT=`sudo -u $GRINDER_USER aws ec2 authorize-security-group-ingress --group-id $SGID \
+          --protocol tcp --port 6372 --cidr ${GRINDER_AGENT_IP}/32 2>&1`
+      if [[ $RESULT == *error* ]]; then
+        ERROR_MSG="ERROR  agent: Unable to authorize security group ingress"
+        echo "$(date +'%Y-%m-%d %H:%M:%S,%3N') $ERROR_MSG" | tee -a $GRINDER_LOGFILE >/dev/null
+        exit 1
+      fi
+
+      # Keep checking until the security group update is live
+      for INDEX in {1..300}; do
+        if [ `aws ec2 describe-security-groups --group-ids $SGID | grep -c ${GRINDER_AGENT_IP}` == 1 ]; then
+          break
+        fi
+      done
     fi
 
     nohup $GRINDER_WRAPPER_CMD "$GRINDER_START_CMD" > $GRINDER_LOGFILE 2>&1 &
@@ -123,7 +143,8 @@ stop)
     rm -f $GRINDER_PIDFILE
     if grep -Fxq "agent" /etc/grinder/type; then
       # Remove this agent's security group permissions
-      sudo -u ${GRINDER_USER} aws ec2 revoke-security-group-ingress --group-id `cat /etc/grinder/ec2.sgid` --protocol tcp --port 6372 --cidr ${GRINDER_AGENT_IP}/32
+      sudo -u ${GRINDER_USER} aws ec2 revoke-security-group-ingress --group-id `cat /etc/grinder/ec2.sgid` \
+          --protocol tcp --port 6372 --cidr ${GRINDER_AGENT_IP}/32
     fi
     echo "Grinder successfully stopped"
   else

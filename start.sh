@@ -43,25 +43,42 @@ fi
 
 # A function that waits until the supplied instance is up and running
 function wait_for_instance {
+  FOUND=false
+
   # To wait until instance is in a "running" state, we first need to know what type of virtualization we're using
-  if [ `aws ec2 describe-instances --instance-id ${1} --filters Name=virtualization-type,Values=hvm | grep -c INSTANCES` == 1 ]; then
+  if [ `aws ec2 describe-instances --instance-id ${1} --filters Name=virtualization-type,Values=hvm \
+      | grep -c INSTANCES` == 1 ]; then
     IP_INDEX=15
-  elif [ `aws ec2 describe-instances --instance-id ${1} --filters Name=virtualization-type,Values=paravirtual | grep -c INSTANCES` == 1 ]; then
+  elif [ `aws ec2 describe-instances --instance-id ${1} --filters Name=virtualization-type,Values=paravirtual \
+      | grep -c INSTANCES` == 1 ]; then
     IP_INDEX=16
   else
     echo "ERROR: Did not find the expected console instance: ${1}"
     exit 1
   fi
 
-  # Now, we keep checking for a public IP (which means the console is up and running, and accessible by our agents)
-  for i in {1..300}; do
-    echo `aws ec2 describe-instances --instance-id ${1} --filters Name=instance-state-name,Values=running | grep INSTANCES | cut -f $IP_INDEX` | tee /tmp/ec2-instance.ip >/dev/null
+  # Configure whether we're checking for a private or public IP
+  if [ "$2" == "private" ]; then
+    OFFSET=2
+  else
+    OFFSET=0
+  fi
 
-    # Once we have an IP, we know it's up and running and can continue
+  # Now, we keep checking for a public IP (which means the instance is accessible)
+  for i in {1..300}; do
+    echo `aws ec2 describe-instances --instance-id ${1} --filters Name=instance-state-name,Values=running \
+        | grep INSTANCES | cut -f $(($IP_INDEX - $OFFSET))` | tee /tmp/ec2-instance.ip >/dev/null
+
     if [[ `cat /tmp/ec2-instance.ip` =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+      FOUND=true
       break
     fi
   done
+
+  if [ "$FOUND" = false ]; then
+    echo "Checked `cat /tmp/ec2-instance.ip` but was unable to get an IP address"
+    exit 1
+  fi
 }
 
 # Not a great way to parse JSON, but it doesn't require any additional software to be installed (like jsawk, etc.)
@@ -71,18 +88,22 @@ function extract_from_json {
 
 # Start up our Grinder Console instance
 RESULT=`aws ec2 start-instances --instance-ids $(cat ec2-console.instance)`
+# TODO: error checking
 wait_for_instance $(cat ec2-console.instance)
 
-# Once the instance is up, we want to confirm that Grinder is up before proceeding
+# Once the instance is up, we want to confirm that the Console is up before proceeding
 CONSOLE_IP=`echo $(cat /tmp/ec2-instance.ip)`
+
 for i in {1..300}; do
-  CONSOLE_DOMAIN=`curl -s http://${CONSOLE_IP}:6373/properties | grep -Po '"httpHost"\:"[a-z0-9\-\.]*"' | grep -o ec2-.*.compute-1.amazonaws.com`
+  CONSOLE_DOMAIN=`curl -s http://${CONSOLE_IP}:6373/properties | grep -Po '"httpHost"\:"[a-z0-9\-\.]*"' \
+      | grep -o ec2-.*.compute-1.amazonaws.com`
   if [ "$CONSOLE_DOMAIN" == "ec2-${CONSOLE_IP//./-}.compute-1.amazonaws.com" ]; then
     break
   fi
 done
 
-echo "Started Grinder Console ... $(cat ec2-console.instance)"
+echo $CONSOLE_IP > /tmp/ec2.console.ip
+echo "Started Grinder Console ($(cat ec2-console.instance)) at $CONSOLE_IP"
 
 # We need to read our JSON config files to get the values needed to start the Grinder Agents
 if [ -z "$AWS_REGION" ]; then
@@ -99,12 +120,23 @@ if [ -z "$AWS_INSTANCE_TYPE" ]; then
 fi
 
 # Spin up the requested number of Grinder Agents (they will be automatically connected to the Console)
-for index in $(seq 1 $1); do
-  # --no-associate-public-ip-address [temporarily removed to aid debugging]
-  echo `aws ec2 run-instances --image-id $(cat ec2-agent.ami) --security-group-ids "${AWS_SECURITY_GROUP_ID}" \
-  --key-name "${AWS_KEYPAIR_NAME}" --instance-type "${AWS_INSTANCE_TYPE}"  \
-  --placement "AvailabilityZone=${AWS_REGION}a" | grep INSTANCES | cut -f 8` | tee ec2-agent-${index}.instance \
-  >/dev/null
-  wait_for_instance $(cat ec2-agent-${index}.instance)
-  echo "Started Grinder Agent #${index} ... $(cat ec2-agent-${index}.instance)"
+for INDEX in $(seq 1 $1); do
+  # Check whether we already have an agent instance around that we can just reuse
+  if [ -f ec2-agent-${INDEX}.instance ]; then
+    RESULT=`aws ec2 start-instances --instance-ids $(cat ec2-agent-${INDEX}.instance)`
+    # TODO: error checking
+  else
+    # TODO: re-add --no-associate-public-ip-address; it was temporarily removed to aid debugging
+    echo `aws ec2 run-instances --image-id $(cat ec2-agent.ami) --security-group-ids $AWS_SECURITY_GROUP_ID \
+        --key-name "$AWS_KEYPAIR_NAME" --instance-type $AWS_INSTANCE_TYPE  \
+        --placement "AvailabilityZone=${AWS_REGION}a" | grep INSTANCES | cut -f 8` \
+        | tee ec2-agent-${INDEX}.instance >/dev/null
+  fi
+
+  wait_for_instance $(cat ec2-agent-${INDEX}.instance) "private"
+
+  # Add additional checking?
+  #jq . <<< `curl -sH "Accept: application/json" http://$(cat /tmp/ec2.console.ip):6373/agents/status`
+
+  echo "  Started Grinder Agent #${INDEX} ($(cat ec2-agent-${INDEX}.instance)) at $(cat /tmp/ec2-instance.ip)"
 done
