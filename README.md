@@ -1,4 +1,4 @@
-# Packer Grinder [![Build Status](https://travis-ci.org/ksclarke/packer-aws-grinder.png?branch=master)](https://travis-ci.org/ksclarke/packer-aws-grinder)
+# Packer AWS Grinder [![Build Status](https://travis-ci.org/ksclarke/packer-aws-grinder.png?branch=master)](https://travis-ci.org/ksclarke/packer-aws-grinder)
 
 A Packer.io build for Grinder.  [Packer.io](http://www.packer.io/) is a tool for creating identical machine images for multiple platforms from a single source configuration.  It supports build products for Amazon EC2, Digital Ocean, Docker, VirtualBox, VMWare, and others.  [Grinder](http://grinder.sourceforge.net/) is load testing framework that makes it easy to run a distributed test using many load injector machines.
 
@@ -6,7 +6,7 @@ For this project, however, only the AWS EC2 builder is used in the Packer.io con
 
 ## Introduction
 
-This project uses Packer.io to build and start up Grinder in the AWS cloud. The [build.sh](https://github.com/ksclarke/packer-aws-grinder/blob/master/build.sh) script creates AMIs for the Grinder console and agents.  The included, but optional, [start.sh](https://github.com/ksclarke/packer-aws-grinder/blob/master/start.sh) script starts the Grinder cloud and prepares it to receive your tests. Likewise, the [stop.sh](https://github.com/ksclarke/packer-aws-grinder/blob/master/stop.sh) script brings down your AWS Grinder cloud.
+This project uses Packer.io and a couple of Bash scripts to build and start up Grinder in the AWS cloud. The [build.sh](https://github.com/ksclarke/packer-aws-grinder/blob/master/build.sh) script creates AMIs for the Grinder console and agents.  The included, but optional, [start.sh](https://github.com/ksclarke/packer-aws-grinder/blob/master/start.sh) script starts the Grinder cloud and prepares it to receive your tests. Likewise, the [stop.sh](https://github.com/ksclarke/packer-aws-grinder/blob/master/stop.sh) script brings down your AWS Grinder cloud.
 
 _Make sure to read the warnings about the start and stop scripts in the Deployment section below._
 

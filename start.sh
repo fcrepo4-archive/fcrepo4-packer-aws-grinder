@@ -138,5 +138,5 @@ for INDEX in $(seq 1 $1); do
   # Add additional checking?
   #jq . <<< `curl -sH "Accept: application/json" http://$(cat /tmp/ec2.console.ip):6373/agents/status`
 
-  echo "  Started Grinder Agent #${INDEX} ($(cat ec2-agent-${INDEX}.instance)) at $(cat /tmp/ec2-instance.ip)"
+  echo " Started Grinder Agent #${INDEX} ($(cat ec2-agent-${INDEX}.instance)) at $(cat /tmp/ec2-instance.ip)"
 done
