@@ -71,13 +71,23 @@ _Note: To have the build script use the packer-aws-grinder.json file, you'll nee
 
 To deploy the Grinder machines to the AWS cloud, type:
 
-    ./start.sh [NUMBER_OF_AGENTS]
+    ./start.sh <NUMBER_OF_AGENTS>
 
 This will bring up one console and the specified number of agents. So, for instance, one would type `./start.sh 5` to start one console and five agents. The agents will be automatically connected to the console. Grinder tests can then be sent to the console and they will be distributed to the attached agents.
 
 To bring down the Grinder cloud, type:
 
     ./stop.sh
+
+This will stop the console and agents, keeping both around to be run later.  If you want to actually get rid of the Grinder Agent instances, tell the `stop.sh` script that you want to terminate them by typing:
+
+    ./stop.sh terminate
+
+This will terminate the agent instances, but not the console instance. To do a complete clean (removing the agent instances, the console instance, and all the generated EC2 AMIs (and their snapshots)), type:
+
+    ./stop.sh clean
+
+You will of course, after that, then have to run the `./build.sh` script again to be able to run the `start.sh` and `stop.sh` scripts.
 
 _**Warning:** Running Grinder in the AWS cloud costs money.  The start and stop scripts are provided as a convenience, but you should confirm that they've actually worked.  I'm not responsible for any hours you incur through use of the AWS cloud. **If you don't agree to that, don't use the supplied start and stop scripts**. As an alternative to the provided scripts, you can bring up the console and agents through AWS' Web interface. The agents will automatically connect to console as long as they're brought up after the console is fully functional._
 

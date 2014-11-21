@@ -17,8 +17,11 @@
 # URL: http://github.com/ksclarke/packer-aws-grinder
 #
 
+# Create a logs directory if it doesn't already exist
+mkdir -p logs
+
 # Clean up artifacts from previous builds
-rm -f *-build.log
+rm -f logs/*-build.log
 rm -f *.instance
 rm -f *.ami
 
@@ -76,11 +79,12 @@ function build_aws_grinder {
     check_file_vars "${1}-vars"
     validate_json "$1"
     packer build -var-file="vars/vars.json" -var-file="vars/${1}-vars.json" -var "grinder_type=${1}"  \
-      -var "aws_public_ip=${2}" -var "grinder_console_instance=${3}" aws-grinder.json | tee aws-grinder-${1}-build.log
+      -var "aws_public_ip=${2}" -var "grinder_console_instance=${3}" aws-grinder.json \
+      | tee logs/aws-grinder-${1}-build.log
   else
     # TODO: We don't use vars files, but supply variables on the command line
     packer -machine-readable build \
-      aws-grinder.json | tee aws-grinder-${1}-build.log
+      aws-grinder.json | tee logs/aws-grinder-${1}-build.log
   fi
 }
 
@@ -107,8 +111,8 @@ fi
 build_aws_grinder "console" "true"
 
 # We need to find out the Grinder Console's AMI so we can launch and pass the instance to the Agents
-if grep -q 'Builds finished but no artifacts were created' aws-grinder-console-build.log; then exit 1; fi
-echo `awk '{ print $NF }' aws-grinder-console-build.log | tail -n 1 | tr -d '\n'` | tee ec2-console.ami >/dev/null
+if grep -q 'Builds finished but no artifacts were created' logs/aws-grinder-console-build.log; then exit 1; fi
+echo `awk '{ print $NF }' logs/aws-grinder-console-build.log | tail -n 1 | tr -d '\n'` | tee ec2-console.ami >/dev/null
 
 # We need to read our JSON config files to get the values for the arguments to: aws ec2 run-instances
 if [ -z "$AWS_REGION" ]; then
@@ -134,8 +138,8 @@ echo `aws ec2 run-instances \
 build_aws_grinder "agent" "false" `cat ec2-console.instance`
 
 # We need to find out the Grinder Agent's AMI so we can launch instances later from our start.sh script
-if grep -q 'Builds finished but no artifacts were created' aws-grinder-agent-build.log; then exit 1; fi
-echo `awk '{ print $NF }' aws-grinder-agent-build.log | tail -n 1 | tr -d '\n'` | tee ec2-agent.ami >/dev/null
+if grep -q 'Builds finished but no artifacts were created' logs/aws-grinder-agent-build.log; then exit 1; fi
+echo `awk '{ print $NF }' logs/aws-grinder-agent-build.log | tail -n 1 | tr -d '\n'` | tee ec2-agent.ami >/dev/null
 
 # Lastly, we stop our console instance but do not terminate it; it will be reused when we run the grinder cloud
 RESULT=`aws ec2 stop-instances --instance-ids $(cat ec2-console.instance)`

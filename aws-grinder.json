@@ -48,7 +48,7 @@
       
       "sudo unattended-upgrade",
       
-      "sudo apt-get install -y nano htop nmap curl lynx-cur unzip",
+      "sudo apt-get install -y nano htop nmap curl lynx-cur unzip jq",
       
       "sudo apt-get remove -y --purge landscape-client",
       "sudo rm -f /etc/update-motd.d/51-cloudguest",

@@ -14,6 +14,5 @@ ec2-console.instance
 ec2-agent.ami
 ec2-agent-*.instance
 
-# Ignore the log file from the Packer.io build
-aws-grinder-console-build.log
-aws-grinder-agent-build.log
+# Ignore all the log files generated from the Packer.io build
+logs

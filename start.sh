@@ -4,8 +4,11 @@
 # Starts a Grinder EC2 cloud up using the previously created Grinder Console instance and Grinder Agent AMI.
 #
 # Usage:
-#   ./start.sh [NUMBER_OF_AGENTS]
-#   ./start.sh 3
+#   ./start.sh <NUMBER_OF_AGENTS>
+#
+# For instance:
+#   ./start.sh 2
+#   ./start.sh 5
 #
 # Author: Kevin S. Clarke <ksclarke@gmail.com>
 # URL: http://github.com/ksclarke/packer-aws-grinder
@@ -13,8 +16,16 @@
 
 # First, we have to check our arguments to make sure we have what we need to run
 if [ -z "$1" ]; then
+  echo ""
   echo "You must start the script with the number of agents to spin up"
-  echo "  Usage: ./start.sh 3"
+  echo ""
+  echo "  Usage:"
+  echo "    ./start.sh <NUMBER_OF_AGENTS>"
+  echo ""
+  echo "  For instance:"
+  echo "    ./start.sh 2"
+  echo "    ./start.sh 5"
+  echo ""
   exit 1
 fi
 
