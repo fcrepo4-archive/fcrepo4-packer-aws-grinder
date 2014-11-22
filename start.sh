@@ -14,8 +14,12 @@
 # URL: http://github.com/ksclarke/packer-aws-grinder
 #
 
-# Number of times to check AWS status before giving up and accepting a failed process
-MAX_ATTEMPTS=500
+# Comment out the below when debugging the agent's build (that's the only time they should have a public IP)
+# AGENT_PUBLIC_IP_TOGGLE="--no-associate-public-ip-address"
+
+# Number of times to check AWS status before giving up and declaring a failed process
+# This is just a guess for now... more experience running this script may help refine this
+MAX_ATTEMPTS=1000
 
 # First, we have to check our arguments to make sure we have what we need to run
 if [ -z "$1" ]; then
@@ -89,9 +93,11 @@ function wait_for_instance {
     fi
   done
 
+  # I could have it continue to check until it finds something (possibly creating an infinite loop?)
+  # For now, I'm being more cautious, giving it a timeout, and having it report this error instead
   if [ "$FOUND" = false ]; then
     echo "ERROR: Checked ${1} but was unable to get an IP address"
-    echo "  The instance may just be slow starting; please consult the AWS console"
+    echo "  The instance may just be slow starting... please consult the AWS console"
     echo "  You can re-run using ./stop.sh and ./start.sh after investigating on AWS"
     exit 1
   fi
@@ -142,9 +148,8 @@ for INDEX in $(seq 1 $1); do
     RESULT=`aws ec2 start-instances --instance-ids $(cat ec2-agent-${INDEX}.instance)`
     # TODO: error checking
   else
-    # TODO: re-add --no-associate-public-ip-address; it was temporarily removed to aid debugging
     echo `aws ec2 run-instances --image-id $(cat ec2-agent.ami) --security-group-ids $AWS_SECURITY_GROUP_ID \
-        --key-name "$AWS_KEYPAIR_NAME" --instance-type $AWS_INSTANCE_TYPE  \
+        --key-name "$AWS_KEYPAIR_NAME" --instance-type $AWS_INSTANCE_TYPE $AGENT_PUBLIC_IP_TOGGLE \
         --placement "AvailabilityZone=${AWS_REGION}a" | grep INSTANCES | cut -f 8` \
         | tee ec2-agent-${INDEX}.instance >/dev/null
   fi
@@ -154,5 +159,5 @@ for INDEX in $(seq 1 $1); do
   # Add additional checking?
   #jq . <<< `curl -sH "Accept: application/json" http://$(cat /tmp/ec2.console.ip):6373/agents/status`
 
-  echo " Started Grinder Agent #${INDEX} ($(cat ec2-agent-${INDEX}.instance)) at $(cat /tmp/ec2-instance.ip)"
+  echo " Started Grinder Agent #${INDEX} (`cat ec2-agent-${INDEX}.instance`) at `cat /tmp/ec2-instance.ip`"
 done
