@@ -14,6 +14,9 @@
 # URL: http://github.com/ksclarke/packer-aws-grinder
 #
 
+# Number of times to check AWS status before giving up and accepting a failed process
+MAX_ATTEMPTS=500
+
 # First, we have to check our arguments to make sure we have what we need to run
 if [ -z "$1" ]; then
   echo ""
@@ -76,7 +79,7 @@ function wait_for_instance {
   fi
 
   # Now, we keep checking for a public IP (which means the instance is accessible)
-  for i in {1..300}; do
+  for TRY in $(seq 1 $MAX_ATTEMPTS); do
     echo `aws ec2 describe-instances --instance-id ${1} --filters Name=instance-state-name,Values=running \
         | grep INSTANCES | cut -f $(($IP_INDEX - $OFFSET))` | tee /tmp/ec2-instance.ip >/dev/null
 
@@ -87,7 +90,9 @@ function wait_for_instance {
   done
 
   if [ "$FOUND" = false ]; then
-    echo "Checked `cat /tmp/ec2-instance.ip` but was unable to get an IP address"
+    echo "ERROR: Checked ${1} but was unable to get an IP address"
+    echo "  The instance may just be slow starting; please consult the AWS console"
+    echo "  You can re-run using ./stop.sh and ./start.sh after investigating on AWS"
     exit 1
   fi
 }
@@ -105,7 +110,7 @@ wait_for_instance $(cat ec2-console.instance)
 # Once the instance is up, we want to confirm that the Console is up before proceeding
 CONSOLE_IP=`echo $(cat /tmp/ec2-instance.ip)`
 
-for i in {1..300}; do
+for TRY in $(seq 1 $MAX_ATTEMPTS); do
   CONSOLE_DOMAIN=`curl -s http://${CONSOLE_IP}:6373/properties | grep -Po '"httpHost"\:"[a-z0-9\-\.]*"' \
       | grep -o ec2-.*.compute-1.amazonaws.com`
   if [ "$CONSOLE_DOMAIN" == "ec2-${CONSOLE_IP//./-}.compute-1.amazonaws.com" ]; then

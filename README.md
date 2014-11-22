@@ -83,11 +83,11 @@ This will stop the console and agents, keeping both around to be run later.  If 
 
     ./stop.sh terminate
 
-This will terminate the agent instances, but not the console instance. To do a complete clean (removing the agent instances, the console instance, and all the generated EC2 AMIs (and their snapshots)), type:
+This will terminate the agent instances, but not the console instance. To do a complete clean, removing the agent instances, the console instance, and the generated EC2 AMIs and related snapshots, type:
 
     ./stop.sh clean
 
-You will of course, after that, then have to run the `./build.sh` script again to be able to run the `start.sh` and `stop.sh` scripts.
+You will, after that, have to re-run the `./build.sh` script before running the `start.sh` and `stop.sh` scripts again.
 
 _**Warning:** Running Grinder in the AWS cloud costs money.  The start and stop scripts are provided as a convenience, but you should confirm that they've actually worked.  I'm not responsible for any hours you incur through use of the AWS cloud. **If you don't agree to that, don't use the supplied start and stop scripts**. As an alternative to the provided scripts, you can bring up the console and agents through AWS' Web interface. The agents will automatically connect to console as long as they're brought up after the console is fully functional._
 
