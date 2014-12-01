@@ -90,7 +90,7 @@ function build_aws_grinder {
 
 # Not great, but doesn't require any additional software to be installed (like jsawk, etc.)
 function extract_from_json {
-  export ${1}=`grep -Po "\"${2}\": ?\".*\"," vars/${3}.json | sed "s/\"${2}\": \"//" | sed "s/\",//"`
+  export ${1}=`grep -Po "\"${2}\": ?\".*\",?" vars/${3}.json | sed "s/\"${2}\": \"//" | tr -d "\","`
 }
 
 # If we're not running as a part of a CI process, we need to pre-process our vars files

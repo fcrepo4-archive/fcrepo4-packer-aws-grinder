@@ -105,7 +105,7 @@ function wait_for_instance {
 
 # Not a great way to parse JSON, but it doesn't require any additional software to be installed (like jsawk, etc.)
 function extract_from_json {
-  export ${1}=`grep -Po "\"${2}\": ?\".*\"," vars/${3}.json | sed "s/\"${2}\": \"//" | sed "s/\",//"`
+  export ${1}=`grep -Po "\"${2}\": ?\".*\"," vars/${3}.json | sed "s/\"${2}\": \"//" | tr -d "\","`
 }
 
 # Start up our Grinder Console instance
