@@ -33,7 +33,7 @@ if [ "$GRINDER_TYPE" == "console" ]; then
 elif [ "$GRINDER_TYPE" == "agent" ]; then
   sudo mkdir /etc/grinder
   # Leave hint of Grinder type so init.d script knows what type of service to start
-  echo "agent" | sudo tee /etc/grinder/type
+  echo "agent" | sudo tee /etc/grinder/type >/dev/null
   # Agents need to be able to look up the IP of their console (private IPs persist in AWS VPCs but not in EC2-Classic)
   # So, for our purpose of connecting agents to the console, we'll have to look up the console instance's IP address.
   if [ -z $AWS_ACCESS_KEY ] || [ -z $AWS_SECRET_KEY ] || [ -z $AWS_REGION ]; then
@@ -102,8 +102,8 @@ elif [ "$GRINDER_TYPE" == "agent" ]; then
       --cidr ${GRINDER_AGENT_IP}/32
 
   # Spin up an agent instance to confirm we can connect to the console
-  nohup java -Dgrinder.console.Host=`aws ec2 describe-instances --filters \
-      Name=instance-id,Values=$(cat ~/ec2-console.instance) | grep INSTANCES | cut -f 14` \
+  FILTERS="Name=instance-id,Values=`cat /etc/grinder/console.instance`"
+  nohup java -Dgrinder.console.Host=`aws ec2 describe-instances --filters "$FILTERS" | grep INSTANCES | cut -f 14` \
       "/opt/grinder/lib/*" net.grinder.Grinder &
 
   # Test that the connection was made
