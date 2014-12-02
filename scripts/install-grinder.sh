@@ -23,7 +23,7 @@ if [ "$GRINDER_TYPE" == "console" ]; then
   sudo mkdir /etc/grinder
   echo "console" | sudo tee /etc/grinder/type
   # Cf. http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html
-  CONSOLE_HOST=`curl http://169.254.169.254/latest/meta-data/public-hostname`
+  CONSOLE_HOST=`wget -O - -q http://169.254.169.254/latest/meta-data/public-hostname`
   echo "Starting Grinder Console running on ${CONSOLE_HOST}"
   # Start up the Grinder console and configure it to listen on the public port
   nohup java -Djava.net.preferIPv4Stack=true -Dgrinder.console.httpHost=${CONSOLE_HOST} \
@@ -83,7 +83,7 @@ elif [ "$GRINDER_TYPE" == "agent" ]; then
       | grep INSTANCES | cut -f ${IP_INDEX}`
 
   # Agents connect to console through the local (not public) EC2 network
-  GRINDER_AGENT_IP=`curl http://169.254.169.254/latest/meta-data/local-ipv4`
+  GRINDER_AGENT_IP=`wget -O - -q http://169.254.169.254/latest/meta-data/local-ipv4`
 
   # Surely the Console has received its public IP by the time this runs (or do we need to poll for it?)  
   if ! is_valid_ip $GRINDER_CONSOLE_IP; then
