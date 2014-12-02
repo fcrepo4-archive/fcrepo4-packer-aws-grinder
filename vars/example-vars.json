@@ -5,5 +5,5 @@
   "aws_keypair_name": "",
   "aws_region": "us-east-1",
 
-  "packer_build_name": ""
+  "packer_build_name": "fcrepo4"
 }

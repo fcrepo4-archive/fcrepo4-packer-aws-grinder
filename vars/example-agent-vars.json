@@ -1,5 +1,5 @@
 {
-"aws_instance_type": "t2.medium",
-"aws_virtualization_type": "hvm",
-"aws_source_ami": "ami-0070c468"
+"aws_instance_type": "m3.medium",
+"aws_virtualization_type": "pv",
+"aws_source_ami": "ami-0870c460"
 }
