@@ -1,0 +1,5 @@
+{
+"aws_instance_type": "m3.medium",
+"aws_virtualization_type": "pv",
+"aws_source_ami": "ami-465bc22e"
+}
