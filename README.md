@@ -1,4 +1,4 @@
-# Packer AWS Grinder [![Build Status](https://travis-ci.org/ksclarke/packer-aws-grinder.png?branch=master)](https://travis-ci.org/ksclarke/packer-aws-grinder)
+# Packer AWS Grinder
 
 A Packer.io build for Grinder.  [Packer.io](http://www.packer.io/) is a tool for creating identical machine images for multiple platforms from a single source configuration.  It supports build products for Amazon EC2, Digital Ocean, Docker, VirtualBox, VMWare, and others.  [Grinder](http://grinder.sourceforge.net/) is load testing framework that makes it easy to run a distributed test using many load injector machines.
 
@@ -59,7 +59,7 @@ The `agent-vars.json` and `console-vars.json` files have the same set of variabl
   <dd>The source AMI to use as a base. Note that the source AMI, virtualization type, and instance type must be <a href="http://aws.amazon.com/amazon-linux-ami/instance-type-matrix/">compatible</a>. If you use a different AMI from the default, make sure it's an Ubuntu image (as that's what the Packer.io build expects).</dd>
 </dl>
 
-## Running
+## Running the Grinder build
 
 To run the packer-aws-grinder build (creating the Grinder AMIs and Console instance), type the following (from within the project directory):
 
@@ -67,7 +67,7 @@ To run the packer-aws-grinder build (creating the Grinder AMIs and Console insta
 
 _Note: To have the build script use the packer-aws-grinder.json file, you'll need to have [strip-json-comments](https://github.com/sindresorhus/strip-json-comments) installed.  If you don't have that installed, the build script will use the pre-generated aws-grinder.json file. Any changes to the build script meant to persist between builds should be made to the packer-aws-grinder.json file._
 
-## Deployment
+## Deployment of the Grinder cloud
 
 To deploy the Grinder machines to the AWS cloud, type:
 
@@ -91,10 +91,23 @@ You will, after that, have to re-run the `./build.sh` script before running the 
 
 _**Warning:** Running Grinder in the AWS cloud costs money.  The start and stop scripts are provided as a convenience, but you should confirm that they've actually worked.  I'm not responsible for any hours you incur through use of the AWS cloud. **If you don't agree to that, don't use the supplied start and stop scripts**. As an alternative to the provided scripts, you can bring up the console and agents through AWS' Web interface. The agents will automatically connect to console as long as they're brought up after the console is fully functional._
 
+## Deployment of Fedora
+
+To deploy the Fedora's fcrepo4 to the AWS cloud, type:
+
+    ./fedora.sh start
+
+To bring down Fedora in the AWS cloud, type:
+
+    ./fedora.sh stop
+
+To clean up all the resources related to Fedora (removing the EC2 instance and local file system artifacts), type:
+
+    ./fedora.sh clean
+
+To change any of the configuration options (e.g., select a different Fedora AMI), edit the `vars/fedora-vars.json` file.
+
 ## License
 
 [Apache Software License, version 2.0](LICENSE)
 
-## Contact
-
-If you have questions about [packer-aws-grinder](http://github.com/ksclarke/packer-aws-grinder) feel free to ask them on the FreeLibrary Projects [mailing list](https://groups.google.com/forum/#!forum/freelibrary-projects); or, if you encounter a problem, please feel free to [open an issue](https://github.com/ksclarke/packer-aws-grinder/issues "GitHub Issue Queue") in the project's issue queue.
