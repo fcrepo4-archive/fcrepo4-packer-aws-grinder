@@ -19,7 +19,7 @@
 
 # Number of times to check AWS status before giving up and declaring a failed process
 # This is just a guess for now... more experience running this script may help refine this
-MAX_ATTEMPTS=1000
+MAX_ATTEMPTS=30
 
 # First, we have to check our arguments to make sure we have what we need to run
 if [ -z "$1" ]; then
@@ -91,6 +91,8 @@ function wait_for_instance {
       FOUND=true
       break
     fi
+
+    sleep 60
   done
 
   # I could have it continue to check until it finds something (possibly creating an infinite loop?)
@@ -122,6 +124,8 @@ for TRY in $(seq 1 $MAX_ATTEMPTS); do
   if [ "$CONSOLE_DOMAIN" == "ec2-${CONSOLE_IP//./-}.compute-1.amazonaws.com" ]; then
     break
   fi
+
+  sleep 60
 done
 
 echo $CONSOLE_IP > /tmp/ec2.console.ip
