@@ -51,15 +51,17 @@ if grep -Fxq "agent" /etc/grinder/type; then
     echo "System not configured with an EC2 console instance"
     exit 1
   fi
+  # We're assuming pv virtualization with this describe-instances (not hvm virtualization) [FIXME?]
   GRINDER_CONSOLE_HOST=`sudo -u ${GRINDER_USER} aws ec2 describe-instances \
-      --filters Name=instance-id,Values=$(cat /etc/grinder/console.instance) | grep INSTANCES | cut -f 12`
+      --filters Name=instance-id,Values=$(cat /etc/grinder/console.instance) | grep INSTANCES | cut -f 15`
   GRINDER_EXE="Grinder"
   GRINDER_HOST_CONFIG="grinder.consoleHost"
   # Cf. http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html
   GRINDER_AGENT_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4`
+  #GRINDER_AGENT_IP=`wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4`
 elif grep -Fxq "console" /etc/grinder/type; then
   # Cf. http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html
-  GRINDER_CONSOLE_HOST=`wget -q -O - http://169.254.169.254/latest/meta-data/local-hostname`
+  GRINDER_CONSOLE_HOST=`wget -q -O - http://169.254.169.254/latest/meta-data/public-hostname`
 
   # Make sure we're responding to our assigned EC2 public address before continuing
   for i in {1..300}; do

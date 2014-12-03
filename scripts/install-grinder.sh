@@ -102,18 +102,23 @@ elif [ "$GRINDER_TYPE" == "agent" ]; then
       --cidr ${GRINDER_AGENT_IP}/32
 
   # Spin up an agent instance to confirm we can connect to the console
-  FILTERS="Name=instance-id,Values=`cat /etc/grinder/console.instance`"
-  nohup java -Dgrinder.console.Host=`aws ec2 describe-instances --filters "$FILTERS" | grep INSTANCES | cut -f 14` \
-      "/opt/grinder/lib/*" net.grinder.Grinder &
+  # FIXME: Now hardcoded for PV virtualization type IP position; handle HVM virtualization too?
+  HOST=`aws ec2 describe-instances --filters Name=instance-id,Values=${INSTANCE} | grep INSTANCES | cut -f 15`
+  nohup java -Dgrinder.console.Host="$HOST" -classpath "/opt/grinder/lib/*" net.grinder.Grinder &
 
   # Test that the connection was made
-  if grep -Fq "waiting for console signal" nohup.out; then
-    echo "Successfully connected agent to console"
+  if [ -f nohup.out ]; then
+    if grep -Fq "waiting for console signal" nohup.out; then
+      echo "Successfully connected agent to console"
 
-    # Perform a little cleanup before finishing creation of the AMI
-    rm nohup.out
+      # Perform a little cleanup before finishing creation of the AMI
+      rm nohup.out
+    else
+      echo "Failed to connect agent to console"
+      exit 1
+    fi
   else
-    echo "Failed to connect agent to console"
+    echo "Grinder agent failed to start as expected; there doesn't seem to be a 'nohup.out' file"
     exit 1
   fi
 
