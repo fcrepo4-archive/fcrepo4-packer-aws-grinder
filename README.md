@@ -107,6 +107,10 @@ To clean up all the resources related to Fedora (removing the EC2 instance and l
 
 To change any of the configuration options (e.g., select a different Fedora AMI), edit the `vars/fedora-vars.json` file.
 
+## Running Fedora's Grinder Tests
+
+For more detailed instructions about how to run Fedora in the AWS Grinder cloud, consult the [Running Fedora in the AWS Grinder Cloud](docs/RunningFedoraInGrinder.md) document
+
 ## License
 
 [Apache Software License, version 2.0](LICENSE)
