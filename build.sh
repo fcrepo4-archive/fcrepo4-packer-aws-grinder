@@ -99,7 +99,7 @@ if [ -z "$CONTINUOUS_INTEGRATION" ]; then
 fi
 
 # If we have strip-json-comments installed, use JSON source file; else use previously generated aws-grinder.json
-if [ -e $STRIP_JSON_SCRIPT ]; then
+if [ ! -f $STRIP_JSON_SCRIPT ]; then
   strip-json-comments packer-aws-grinder.json > aws-grinder.json
 elif [ ! -f aws-grinder.json ]; then
   echo "  strip-json-comments needs to be installed to generate the aws-grinder.json file"
